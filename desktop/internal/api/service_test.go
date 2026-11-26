@@ -197,3 +197,56 @@ func TestRecurringRunAndRecalculate(t *testing.T) {
 		t.Fatalf("recalculate should keep one paid installment, got %+v", rules)
 	}
 }
+
+func TestRecurringListIsAlphabetical(t *testing.T) {
+	svc := newService(t)
+	boot, _ := svc.Bootstrap()
+	account := boot.Accounts[0].ID
+
+	for _, spec := range []struct {
+		label  string
+		active bool
+	}{
+		{"Zebra", true},
+		{"Alpha", false},
+		{"Mike", true},
+	} {
+		if _, err := svc.CreateRecurring(RecurringInput{
+			Type: "expense", Amount: 10, Currency: "USD",
+			AccountID: account, Label: spec.label,
+			Unit: "month", Interval: 1, StartDate: store.Today(), Active: spec.active,
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	rules, err := svc.ListRecurring()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := make([]string, len(rules))
+	for i, rule := range rules {
+		got[i] = rule.Label
+	}
+	want := []string{"Alpha", "Mike", "Zebra"}
+	if len(got) != len(want) {
+		t.Fatalf("rule count = %d, want %d: %v", len(got), len(want), got)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("rules order = %v, want %v", got, want)
+		}
+	}
+
+	// Pausing or resuming a rule must not move it in the list.
+	if err := svc.SetRecurringActive(rules[0].ID, true); err != nil {
+		t.Fatal(err)
+	}
+	rules, err = svc.ListRecurring()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rules[0].Label != "Alpha" {
+		t.Fatalf("rules order changed after activation: %+v", rules)
+	}
+}

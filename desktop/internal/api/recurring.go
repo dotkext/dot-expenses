@@ -3,6 +3,8 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/dotkext/dot-expenses/desktop/internal/store"
@@ -37,7 +39,7 @@ func (s *Service) ListRecurring() ([]RecurringRule, error) {
 		       COALESCE(r.category_id, ''), COALESCE(r.merchant_id, ''), COALESCE(r.label, ''),
 		       r.unit, r.interval, COALESCE(r.by_day, 0), r.start_date, COALESCE(r.end_date, ''),
 		       r.next_run_at, r.active
-		FROM recurring_rules r ORDER BY r.active DESC, r.next_run_at`)
+		FROM recurring_rules r ORDER BY r.created_at`)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +120,28 @@ func (s *Service) ListRecurring() ([]RecurringRule, error) {
 			ByDay: r.ByDay, StartDate: r.StartDate, EndDate: r.EndDate, NextRunAt: r.NextRunAt, Active: r.Active,
 		})
 	}
+	sort.SliceStable(result, func(i, j int) bool {
+		return strings.ToLower(recurringSortName(result[i])) < strings.ToLower(recurringSortName(result[j]))
+	})
 	return result, nil
+}
+
+// recurringSortName is the name shown in the list. Sorting by it keeps the
+// order A–Z even when a rule is paused or resumed.
+func recurringSortName(rule RecurringRule) string {
+	if rule.Label != "" {
+		return rule.Label
+	}
+	if rule.TransferToAccount != "" {
+		return rule.TransferToAccount
+	}
+	if rule.MerchantName != "" {
+		return rule.MerchantName
+	}
+	if rule.CategoryName != "" {
+		return rule.CategoryName
+	}
+	return rule.Type
 }
 
 func (s *Service) CreateRecurring(input RecurringInput) (RecurringRule, error) {
