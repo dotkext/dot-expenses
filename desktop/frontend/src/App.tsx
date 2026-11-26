@@ -5,14 +5,25 @@ import {
   LayoutDashboard,
   ListOrdered,
   ListTodo,
+  LogOut,
+  MoreHorizontal,
   Plus,
   Settings,
   Wallet,
 } from "lucide-react";
+import { Window } from "@wailsio/runtime";
 
 import { I18nProvider, useI18n } from "@/components/i18n-provider";
 import { ThemeToggle } from "@/components/features/theme-toggle";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -27,10 +38,10 @@ import { AccountsPage } from "./pages/accounts";
 import { PlannedPage } from "./pages/planned";
 import { RecurringPage } from "./pages/recurring";
 import { BudgetsPage } from "./pages/budgets";
-import { SettingsPage } from "./pages/settings";
+import { SettingsDialog } from "./pages/settings";
 import type { Bootstrap } from "./types";
 
-type Page = "dashboard" | "transactions" | "planned" | "recurring" | "budgets" | "accounts" | "settings";
+type Page = "dashboard" | "transactions" | "planned" | "recurring" | "budgets" | "accounts";
 
 const NAV = [
   { id: "dashboard", icon: LayoutDashboard, key: "nav.dashboard" },
@@ -39,7 +50,6 @@ const NAV = [
   { id: "recurring", icon: CalendarClock, key: "nav.recurring" },
   { id: "budgets", icon: CalendarRange, key: "nav.budgets" },
   { id: "accounts", icon: Wallet, key: "nav.accounts" },
-  { id: "settings", icon: Settings, key: "nav.settings" },
 ] as const;
 
 export function App() {
@@ -93,6 +103,7 @@ function DesktopApp({ initialBoot }: { initialBoot: Bootstrap }) {
   const [page, setPage] = useState<Page>("dashboard");
   const [refreshKey, setRefreshKey] = useState(0);
   const [transactionOpen, setTransactionOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { t } = useI18n();
 
   async function refresh() {
@@ -138,21 +149,42 @@ function DesktopApp({ initialBoot }: { initialBoot: Bootstrap }) {
               <span className="text-xs font-medium text-muted-foreground">{t("theme.label")}</span>
               <ThemeToggle />
             </div>
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-md p-1.5 text-left hover:bg-accent"
-              onClick={() => setPage("settings")}
-            >
-              <span className="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                {(boot.profile.name || "?").slice(0, 1).toUpperCase()}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">{boot.profile.name}</span>
-                <span className="block truncate text-xs text-muted-foreground">
-                  {boot.profile.email || t("nav.accountMenu")}
-                </span>
-              </span>
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={t("nav.accountMenu")}
+                  className="flex items-center gap-2 rounded-md p-1.5 text-left outline-none hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  <span className="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                    {(boot.profile.name || "?").slice(0, 1).toUpperCase()}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{boot.profile.name}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {boot.profile.email || t("nav.accountMenu")}
+                    </span>
+                  </span>
+                  <MoreHorizontal className="size-4 shrink-0 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="top" align="start" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="truncate text-sm font-medium">{boot.profile.name}</div>
+                  <div className="truncate text-xs font-normal text-muted-foreground">
+                    {boot.profile.email || t("nav.accountMenu")}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => setSettingsOpen(true)}>
+                  <Settings className="size-4" aria-hidden /> {t("nav.settings")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onSelect={() => void Window.Close()}>
+                  <LogOut className="size-4" aria-hidden /> {t("nav.quit")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </aside>
 
@@ -177,7 +209,6 @@ function DesktopApp({ initialBoot }: { initialBoot: Bootstrap }) {
           {page === "accounts" && (
             <AccountsPage boot={boot} refreshKey={refreshKey} onChanged={refresh} />
           )}
-          {page === "settings" && <SettingsPage boot={boot} onChanged={refresh} />}
         </main>
       </div>
 
@@ -186,6 +217,13 @@ function DesktopApp({ initialBoot }: { initialBoot: Bootstrap }) {
         open={transactionOpen}
         onOpenChange={setTransactionOpen}
         onSaved={refresh}
+      />
+
+      <SettingsDialog
+        boot={boot}
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onChanged={refresh}
       />
     </div>
   );

@@ -76,6 +76,7 @@ export const en = {
   "nav.add": "Add",
   "nav.accountMenu": "Account menu",
   "nav.signOut": "Sign out",
+  "nav.quit": "Quit",
   "nav.quickAdd": "Quick add",
 
   /* ---------------------------------------------------------------- */

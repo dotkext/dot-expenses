@@ -75,6 +75,7 @@ export const ro = {
   "nav.add": "Adaugă",
   "nav.accountMenu": "Meniul contului",
   "nav.signOut": "Deconectează-te",
+  "nav.quit": "Ieși",
   "nav.quickAdd": "Adăugare rapidă",
 
   /* ---------------------------------------------------------------- */

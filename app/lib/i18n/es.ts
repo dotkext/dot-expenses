@@ -68,6 +68,7 @@ export const es = {
   "nav.add": "Añadir",
   "nav.accountMenu": "Menú de la cuenta",
   "nav.signOut": "Cerrar sesión",
+  "nav.quit": "Salir",
   "nav.quickAdd": "Añadir rápido",
 
   "auth.dotNetworkApp": "Una app de dotNetwork",
