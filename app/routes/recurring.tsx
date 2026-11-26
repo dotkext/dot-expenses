@@ -299,7 +299,12 @@ export default function RecurringPage({ loaderData }: Route.ComponentProps) {
 
         <ul className="divide-y">
           {rules.map((rule) => (
-            <li key={rule.id} className="flex flex-wrap items-center gap-3 p-3 sm:flex-nowrap">
+            <li
+              key={rule.id}
+              className={`flex flex-wrap items-center gap-3 p-3 sm:flex-nowrap ${
+                rule.active ? "" : "[&>*]:opacity-60"
+              }`}
+            >
               <Switch
                 checked={rule.active}
                 onCheckedChange={() => toggleActive.mutate(rule)}

@@ -169,10 +169,7 @@ function SidebarFooter({
 
   return (
     <div className="grid gap-1 border-t p-2">
-      <div className={cn("flex items-center", collapsed ? "justify-center" : "justify-between pl-1")}>
-        {!collapsed && (
-          <span className="text-xs font-medium text-muted-foreground">{t("theme.label")}</span>
-        )}
+      <div className={cn("flex items-center", collapsed ? "justify-center" : "justify-end")}>
         <ThemeToggle />
       </div>
 
