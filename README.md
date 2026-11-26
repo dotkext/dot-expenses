@@ -49,6 +49,20 @@ done.
 `DATABASE_URL` at any external Postgres instead if you prefer — the bundled
 database is optional (it is only bound to `127.0.0.1`).
 
+### Desktop app (Wails 3 + SQLite)
+
+A native desktop build lives in [`desktop/`](desktop/README.md). It uses Wails
+v3, a frameless custom window frame and a local SQLite database instead of
+PostgreSQL.
+
+```bash
+cd desktop
+wails3 build
+```
+
+The executable is written to `desktop/bin/`; data is stored in the OS user
+config directory.
+
 ### Environment variables
 
 | Variable | Default | Description |
