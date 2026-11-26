@@ -96,6 +96,17 @@ function labelOf(
   return row.label ?? joins.merchantName ?? joins.categoryName ?? describeFrequency(row, locale);
 }
 
+/** Name shown in the recurring list, used to keep it A–Z regardless of status. */
+function ruleDisplayName(rule: RecurringRuleDTO, locale: Locale): string {
+  if (rule.label) return rule.label;
+  if (rule.isTransfer) {
+    return getI18n(locale).t("recurring.transferTo", {
+      account: rule.transferToAccountName ?? "",
+    });
+  }
+  return rule.merchantName ?? rule.categoryName ?? getI18n(locale).t("recurring.fallback");
+}
+
 export async function listRules(user: User): Promise<RecurringRuleDTO[]> {
   const transferAccounts = alias(accounts, "transfer_accounts");
   const rows = await db
@@ -112,7 +123,7 @@ export async function listRules(user: User): Promise<RecurringRuleDTO[]> {
     .leftJoin(categories, eq(recurringRules.categoryId, categories.id))
     .leftJoin(merchants, eq(recurringRules.merchantId, merchants.id))
     .where(eq(recurringRules.userId, user.id))
-    .orderBy(recurringRules.active ? recurringRules.nextRunAt : recurringRules.startDate);
+    .orderBy(recurringRules.createdAt);
 
   const month = currentMonth();
   const { start, end } = monthRange(month);
@@ -189,6 +200,13 @@ export async function listRules(user: User): Promise<RecurringRuleDTO[]> {
       ),
     );
   }
+
+  const locale = toLocale(user.locale);
+  result.sort((a, b) =>
+    ruleDisplayName(a, locale).localeCompare(ruleDisplayName(b, locale), locale, {
+      sensitivity: "base",
+    }),
+  );
   return result;
 }
 
