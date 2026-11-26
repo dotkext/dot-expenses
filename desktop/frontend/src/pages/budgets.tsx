@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { backend } from "../backend";
 import type { Bootstrap } from "../types";
+import { currentMonth } from "@/lib/dates";
 
 export function BudgetsPage({
   boot,
@@ -20,7 +21,7 @@ export function BudgetsPage({
   onChanged: () => void;
 }) {
   const { t, fmtMoney } = useI18n();
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(currentMonth);
   const [amounts, setAmounts] = useState<Record<string, number>>({});
   const [spent, setSpent] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);

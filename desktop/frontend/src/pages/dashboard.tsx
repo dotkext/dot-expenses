@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { useI18n } from "@/components/i18n-provider";
 import { MonthNav } from "@/components/features/month-nav";
+import { currentMonth } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { backend } from "../backend";
@@ -19,7 +20,7 @@ export function DashboardPage({
   refreshKey: number;
 }) {
   const { t, fmtMoney, fmtPercent } = useI18n();
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(currentMonth);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
 
   useEffect(() => {

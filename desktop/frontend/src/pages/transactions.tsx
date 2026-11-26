@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/table";
 import { backend } from "../backend";
 import { TransactionDialog } from "../components/transaction-dialog";
+import { currentMonth } from "@/lib/dates";
 import type { Bootstrap, Transaction } from "../types";
 
 export function TransactionsPage({
@@ -34,7 +35,7 @@ export function TransactionsPage({
   refreshKey: number;
 }) {
   const { t, fmtMoney, fmtDate } = useI18n();
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(currentMonth);
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
   const [items, setItems] = useState<Transaction[]>([]);
