@@ -1,0 +1,22 @@
+@import "../../../app/app.css";
+@source "../../../app";
+@source "../src";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+.desktop-drag {
+  --wails-draggable: drag;
+}
+
+.desktop-no-drag {
+  --wails-draggable: no-drag;
+}
