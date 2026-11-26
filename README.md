@@ -37,7 +37,7 @@ expenses, multi-currency support and a customizable dashboard.
 ## Quick start (docker compose)
 
 ```bash
-git clone <this repo> && cd dot-expenses
+git clone https://github.com/dotkext/dot-expenses.git && cd dot-expenses
 docker compose up -d
 ```
 
