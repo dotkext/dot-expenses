@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=dot-expenses
+Comment=Local-first expense and budget tracker
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/dot-expenses.exe %u
+Terminal=false
+Type=Application
+Icon=dot-expenses.exe
+Categories=Utility;
+StartupWMClass=dot-expenses.exe
+
+ 
