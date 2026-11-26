@@ -140,7 +140,12 @@ export function RecurringPage({
       <div className="overflow-hidden rounded-xl border bg-card">
         <ul className="divide-y">
           {rules.map((rule) => (
-            <li key={rule.id} className="flex flex-wrap items-center gap-3 p-3">
+            <li
+              key={rule.id}
+              className={`flex flex-wrap items-center gap-3 p-3 ${
+                rule.active ? "" : "[&>*]:opacity-60"
+              }`}
+            >
               <Switch
                 checked={rule.active}
                 onCheckedChange={(active) =>

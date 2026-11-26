@@ -145,8 +145,7 @@ function DesktopApp({ initialBoot }: { initialBoot: Bootstrap }) {
             })}
           </nav>
           <div className="mt-auto grid gap-2 border-t p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">{t("theme.label")}</span>
+            <div className="flex items-center justify-end">
               <ThemeToggle />
             </div>
             <DropdownMenu>
