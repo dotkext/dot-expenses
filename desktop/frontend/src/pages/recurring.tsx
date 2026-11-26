@@ -77,13 +77,21 @@ export function RecurringPage({
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
+    if (form.transferToAccountId === "__select__") {
+      toast.error(t("errors.transferAccountRequired"));
+      return;
+    }
     setBusy(true);
     try {
+      const payload = {
+        ...form,
+        transferToAccountId: form.transferToAccountId === "__select__" ? "" : form.transferToAccountId,
+      };
       if (editing) {
-        await backend.UpdateRecurring(editing.id, form);
+        await backend.UpdateRecurring(editing.id, payload);
         toast.success(t("recurring.updated"));
       } else {
-        await backend.CreateRecurring(form);
+        await backend.CreateRecurring(payload);
         toast.success(t("recurring.created"));
       }
       setOpen(false);
@@ -231,7 +239,7 @@ export function RecurringPage({
               onValueChange={(value) => {
                 if (!value) return;
                 if (value === "transfer") {
-                  setForm({ ...form, type: "expense", transferToAccountId: form.transferToAccountId || "", categoryId: "" });
+                  setForm({ ...form, type: "expense", transferToAccountId: form.transferToAccountId || "__select__", categoryId: "" });
                 } else {
                   setForm({ ...form, type: value, transferToAccountId: "" });
                 }
@@ -290,7 +298,7 @@ export function RecurringPage({
                   <Label>{t("recurring.toAccount")}</Label>
                   <AccountSelect
                     accounts={boot.accounts}
-                    value={form.transferToAccountId}
+                    value={form.transferToAccountId === "__select__" ? "" : form.transferToAccountId}
                     onChange={(transferToAccountId) => setForm({ ...form, transferToAccountId })}
                     exclude={form.accountId}
                   />
@@ -310,7 +318,7 @@ export function RecurringPage({
 
             <div className="grid grid-cols-3 gap-2">
               <div className="grid gap-2">
-                <Label>{t("recurring.unitDay")}</Label>
+                <Label>{t("recurring.every")}</Label>
                 <Select value={form.unit} onValueChange={(unit) => setForm({ ...form, unit })}>
                   <SelectTrigger>
                     <SelectValue />

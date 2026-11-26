@@ -127,6 +127,47 @@ func TestPlannedInstallments(t *testing.T) {
 	}
 }
 
+func TestRecurringTransfer(t *testing.T) {
+	svc := newService(t)
+	boot, _ := svc.Bootstrap()
+	cash := boot.Accounts[0]
+	savings, err := svc.CreateAccount(AccountInput{Name: "Savings", Type: "cash", StartingBalance: 0})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rule, err := svc.CreateRecurring(RecurringInput{
+		Type: "expense", Amount: 100, Currency: "USD",
+		AccountID: cash.ID, TransferToAccountID: savings.ID, Label: "Savings transfer",
+		Unit: "month", Interval: 1, StartDate: store.Today(), Active: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.RunRecurringNow(rule.ID); err != nil {
+		t.Fatal(err)
+	}
+	accounts, _ := svc.ListAccounts()
+	var cashBalance, savingsBalance float64
+	for _, a := range accounts {
+		switch a.ID {
+		case cash.ID:
+			cashBalance = a.Balance
+		case savings.ID:
+			savingsBalance = a.Balance
+		}
+	}
+	if cashBalance != -100 || savingsBalance != 100 {
+		t.Fatalf("transfer balances: cash=%v savings=%v", cashBalance, savingsBalance)
+	}
+	summary, err := svc.GetDashboard(store.CurrentMonth())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if summary.Totals.Income != 0 || summary.Totals.Expense != 0 {
+		t.Fatalf("transfer leaked into dashboard totals: %+v", summary.Totals)
+	}
+}
+
 func TestRecurringRunAndRecalculate(t *testing.T) {
 	svc := newService(t)
 	boot, _ := svc.Bootstrap()
