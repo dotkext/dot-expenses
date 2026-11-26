@@ -51,7 +51,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       const user = await getAuth(request);
       if (!user) throw fail("no session for linking");
       await linkGoogleAccount(user.id, profile.providerUserId);
-      throw redirect("/settings?linked=1", { headers });
+      throw redirect("/?settings=linked", { headers });
     }
 
     const cookieLocale = getCookie(request, LOCALE_COOKIE);

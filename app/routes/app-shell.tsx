@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, Outlet, useNavigate, useSearchParams } from "react-router";
 import type { Route } from "./+types/app-shell";
 
 import { CommandMenu } from "@/components/features/command-menu";
 import { QuickAddDialog, setBaseCurrencyHint } from "@/components/features/quick-add";
+import { SettingsDialog } from "@/components/features/settings-dialog";
 import { ThemeToggle } from "@/components/features/theme-toggle";
 import { useI18n } from "@/components/i18n-provider";
 import { Logo } from "@/components/features/logo";
@@ -37,6 +38,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { getUserDTO, requireAuth } from "@/server/auth.service";
 import type { UserDTO } from "@/lib/types";
 import { useUiStore } from "@/stores/ui";
@@ -163,6 +165,7 @@ function SidebarFooter({
   onExpand?: () => void;
 }) {
   const { t } = useI18n();
+  const { openSettings } = useUiStore();
 
   return (
     <div className="grid gap-1 border-t p-2">
@@ -207,10 +210,13 @@ function SidebarFooter({
             <div className="truncate text-xs font-normal text-muted-foreground">{user.email}</div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link to="/settings" onClick={onNavigate}>
-              <Settings className="size-4" aria-hidden /> {t("nav.settings")}
-            </Link>
+          <DropdownMenuItem
+            onSelect={() => {
+              onNavigate?.();
+              openSettings();
+            }}
+          >
+            <Settings className="size-4" aria-hidden /> {t("nav.settings")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onSignOut} variant="destructive">
@@ -240,13 +246,29 @@ export default function AppShell({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { openQuickAdd } = useUiStore();
+  const { openQuickAdd, openSettings, closeSettings } = useUiStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const handledSettingsRef = useRef<string | null>(null);
 
   setBaseCurrencyHint(user.currency);
 
   useEffect(() => {
     setCollapsed(localStorage.getItem(SIDEBAR_KEY) === "1");
   }, []);
+
+  // `/settings` redirects here with ?settings; open the dialog and clean the URL.
+  useEffect(() => {
+    const flag = searchParams.get("settings");
+    if (!flag) {
+      handledSettingsRef.current = null;
+      return;
+    }
+    if (handledSettingsRef.current === flag) return;
+    handledSettingsRef.current = flag;
+    openSettings();
+    if (flag === "linked") toast.success(t("settings.googleLinked"));
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams, openSettings, t]);
 
   function toggleCollapsed() {
     setCollapsed((prev) => {
@@ -279,6 +301,7 @@ export default function AppShell({ loaderData }: Route.ComponentProps) {
     try {
       await apiPost("/api/auth/logout");
     } finally {
+      closeSettings();
       navigate("/login", { replace: true });
     }
   }
@@ -380,6 +403,7 @@ export default function AppShell({ loaderData }: Route.ComponentProps) {
 
         <CommandMenu />
         <QuickAddDialog />
+        <SettingsDialog user={user} />
       </div>
     </TooltipProvider>
   );

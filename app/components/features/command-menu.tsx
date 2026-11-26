@@ -27,7 +27,7 @@ import { useUiStore } from "@/stores/ui";
 export function CommandMenu() {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { commandOpen, setCommandOpen, openQuickAdd } = useUiStore();
+  const { commandOpen, setCommandOpen, openQuickAdd, openSettings } = useUiStore();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -82,7 +82,7 @@ export function CommandMenu() {
             <Wallet className="size-4" aria-hidden />
             {t("nav.accounts")}
           </CommandItem>
-          <CommandItem onSelect={() => run(() => navigate("/settings"))}>
+          <CommandItem onSelect={() => run(() => openSettings())}>
             <Settings className="size-4" aria-hidden />
             {t("nav.settings")}
           </CommandItem>

@@ -16,6 +16,10 @@ type UiState = {
   mobileNavOpen: boolean;
   setMobileNavOpen: (open: boolean) => void;
 
+  settingsOpen: boolean;
+  openSettings: () => void;
+  closeSettings: () => void;
+
   /** Branded hand-off shown between signing in and the first app paint. */
   splashVisible: boolean;
   showSplash: () => void;
@@ -33,6 +37,10 @@ export const useUiStore = create<UiState>((set) => ({
 
   mobileNavOpen: false,
   setMobileNavOpen: (open) => set({ mobileNavOpen: open }),
+
+  settingsOpen: false,
+  openSettings: () => set({ settingsOpen: true }),
+  closeSettings: () => set({ settingsOpen: false }),
 
   splashVisible: false,
   showSplash: () => set({ splashVisible: true }),
