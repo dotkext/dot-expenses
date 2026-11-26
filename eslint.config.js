@@ -5,7 +5,14 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["build/**", ".react-router/**", "node_modules/**", "drizzle/**"],
+    ignores: [
+      "build/**",
+      ".react-router/**",
+      "node_modules/**",
+      "drizzle/**",
+      "desktop/frontend/dist/**",
+      "desktop/bin/**",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
