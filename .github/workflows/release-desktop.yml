@@ -38,6 +38,15 @@ jobs:
           cache: npm
           cache-dependency-path: desktop/frontend/package-lock.json
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+
+      - name: Install web dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
       - name: Install Wails 3
         shell: pwsh
         run: |
