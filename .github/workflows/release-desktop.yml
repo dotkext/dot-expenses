@@ -44,6 +44,10 @@ jobs:
           go install github.com/wailsapp/wails/v3/cmd/wails3@v3.1.0
           Add-Content -Path $env:GITHUB_PATH -Value "$(go env GOPATH)\bin"
 
+      - name: Install frontend dependencies
+        working-directory: desktop/frontend
+        run: npm ci --include=dev
+
       - name: Build desktop app
         run: wails3 build
 
