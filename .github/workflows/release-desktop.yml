@@ -1,0 +1,75 @@
+name: Release desktop
+
+on:
+  push:
+    branches: [production]
+  workflow_dispatch:
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows build
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: desktop
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: desktop/go.mod
+          cache-dependency-path: desktop/go.sum
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/frontend/package-lock.json
+
+      - name: Install Wails 3
+        shell: pwsh
+        run: |
+          go install github.com/wailsapp/wails/v3/cmd/wails3@v3.1.0
+          Add-Content -Path $env:GITHUB_PATH -Value "$(go env GOPATH)\bin"
+
+      - name: Build desktop app
+        run: wails3 build
+
+      - name: Package release
+        shell: pwsh
+        run: |
+          $version = (Get-Content frontend/package.json -Raw | ConvertFrom-Json).version
+          $asset = "dot-expenses-v$version-windows-amd64.zip"
+          New-Item -ItemType Directory -Path package | Out-Null
+          Copy-Item bin/dot-expenses.exe package/
+          Copy-Item README.md package/
+          Copy-Item ../LICENSE package/
+          Compress-Archive -Path package/* -DestinationPath $asset
+          Add-Content -Path $env:GITHUB_ENV -Value "ASSET=$asset"
+          Add-Content -Path $env:GITHUB_ENV -Value "VERSION=$version"
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $short = $env:GITHUB_SHA.Substring(0, 7)
+          $tag = "desktop-v$env:VERSION-$short"
+          gh release view $tag --json tagName 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $env:ASSET --clobber
+          } else {
+            gh release create $tag $env:ASSET --target $env:GITHUB_SHA --title "dot-expenses desktop v$env:VERSION ($short)" --notes "Windows build of the dot-expenses desktop app, generated from the production branch."
+          }
